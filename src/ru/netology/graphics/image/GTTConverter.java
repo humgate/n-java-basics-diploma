@@ -3,17 +3,31 @@ package ru.netology.graphics.image;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-public class GTTConverter implements TextGraphicsConverter {
+public class GTTConverter implements TextGraphicsConverter  {
 
-    int width;
-    int height;
-    double ratio = (double) width / (double) height;
+    private int maxWidth;
+    private int maxHeight;
+    private double maxRatio;
+    private TextColorSchema schema;;
 
+    public GTTConverter(int maxWidth, int maxHeight, double maxRatio, TextColorSchema schema) {
+        this.maxWidth = maxWidth;
+        this.maxHeight = maxHeight;
+        this.maxRatio = maxRatio;
+        this.schema = schema;
+    }
+
+    public GTTConverter() {
+        this(0,0,0, new ColorSchema());
+    }
+
+    /*
+     * Конвертирует картинку в строку символов
+     */
     @Override
     public String convert(String url) throws IOException, BadImageSizeException {
         // Вот так просто мы скачаем картинку из интернета :)
@@ -29,12 +43,12 @@ public class GTTConverter implements TextGraphicsConverter {
         double ratioDirect = (double) imgWidth / (double) imgHeight;
         double ratioInverted = 1d/ratioDirect;
 
-        if (ratioDirect > ratio) {
-            throw new BadImageSizeException(ratio, ratioDirect);
+        if (ratioDirect > maxRatio) {
+            throw new BadImageSizeException(maxRatio, ratioDirect);
         }
 
-        if (ratioInverted > ratio) {
-            throw new BadImageSizeException(ratio, ratioInverted);
+        if (ratioInverted > maxRatio) {
+            throw new BadImageSizeException(maxRatio, ratioInverted);
         }
 
         // Если конвертеру выставили максимально допустимые ширину и/или высоту,
@@ -52,8 +66,8 @@ public class GTTConverter implements TextGraphicsConverter {
         int newWidth = imgWidth;
         int newHeight = imgHeight;
 
-        if (imgWidth > width || imgHeight > height) {
-            double multiplier = Math.max((double) imgWidth / (double) width, (double) imgHeight / (double) height);
+        if (imgWidth > maxWidth || imgHeight > maxHeight) {
+            double multiplier = Math.max((double) imgWidth / (double) maxWidth, (double) imgHeight / (double) maxHeight);
             newWidth = (int) (imgWidth / multiplier);
             newHeight = (int) (imgHeight / multiplier);
         }
@@ -104,28 +118,19 @@ public class GTTConverter implements TextGraphicsConverter {
         // получить соответствующий символ c. Логикой превращения цвета
         // в символ будет заниматься другой объект, который мы рассмотрим ниже
 
-        char[][] arr = new char[newWidth][newHeight];
         StringBuilder stringBuilder = new StringBuilder();
         int[] pixel = new int[3];
+
         for (int h = 0; h < newHeight; h++) {
-            stringBuilder.append("\n");
             for (int w = 0; w < newWidth; w++) {
                 int color = bwRaster.getPixel(w, h, pixel)[0];
-                char c;
-                if (color >=0 && color < 80) {
-                    c = '#';
-                } else if (color >=80 && color < 120) {
-                    c = '*';
-                } else if (color >=120 && color < 200) {
-                    c = ':';
-                }
-                else {
-                    c = '.';
-                }
+                char c = schema.convert(color);
+                //запоминаем символ c
                 stringBuilder.append(c);
-                stringBuilder.append(c); //запоминаем символ c, например, в двумерном массиве
+                //2 шт чтоб покрасивше было отображалось
+                stringBuilder.append(c);
             }
-
+            stringBuilder.append("\n");
         }
 
         return stringBuilder.toString();
@@ -133,21 +138,22 @@ public class GTTConverter implements TextGraphicsConverter {
 
     @Override
     public void setMaxWidth(int width) {
-        this.width = width;
+        this.maxWidth = width;
     }
 
     @Override
     public void setMaxHeight(int height) {
-        this.height= height;
+        this.maxHeight = height;
     }
 
     @Override
     public void setMaxRatio(double maxRatio) {
-        ratio = maxRatio;
+        this.maxRatio = maxRatio;
     }
 
     @Override
     public void setTextColorSchema(TextColorSchema schema) {
+        this.schema = schema;
 
     }
 }

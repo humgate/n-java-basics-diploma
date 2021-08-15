@@ -12,8 +12,9 @@ public class Main {
         TextGraphicsConverter converter = new GTTConverter(); // Создайте тут объект вашего класса конвертера
 
         GServer server = new GServer(converter); // Создаём объект сервера
-        converter.setMaxHeight(800);
-        converter.setMaxWidth(600);
+        converter.setMaxHeight(250);
+        converter.setMaxWidth(170);
+        converter.setMaxRatio(4.1d);
         server.start(); // Запускаем
 
         // Или то же, но с сохранением в файл:
