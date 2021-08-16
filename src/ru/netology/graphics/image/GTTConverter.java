@@ -40,15 +40,12 @@ public class GTTConverter implements TextGraphicsConverter  {
         // соотношение сторон изображения, то вам здесь надо сделать эту проверку,
         // и, если картинка не подходит, выбросить исключение BadImageSizeException.
         // Чтобы получить ширину картинки, вызовите img.getWidth(), высоту - img.getHeight()
-        double ratioDirect = (double) imgWidth / (double) imgHeight;
-        double ratioInverted = 1d/ratioDirect;
 
-        if (ratioDirect > maxRatio) {
-            throw new BadImageSizeException(maxRatio, ratioDirect);
-        }
-
-        if (ratioInverted > maxRatio) {
-            throw new BadImageSizeException(maxRatio, ratioInverted);
+        if (maxRatio != 0) { //значит его значение установили
+            double imgRatio = (double) imgWidth / (double) imgHeight;
+            if (imgRatio > maxRatio) {
+                throw new BadImageSizeException(maxRatio, imgRatio);
+            }
         }
 
         // Если конвертеру выставили максимально допустимые ширину и/или высоту,
@@ -66,10 +63,12 @@ public class GTTConverter implements TextGraphicsConverter  {
         int newWidth = imgWidth;
         int newHeight = imgHeight;
 
-        if (imgWidth > maxWidth || imgHeight > maxHeight) {
-            double multiplier = Math.max((double) imgWidth / (double) maxWidth, (double) imgHeight / (double) maxHeight);
-            newWidth = (int) (imgWidth / multiplier);
-            newHeight = (int) (imgHeight / multiplier);
+        if (imgWidth != 0 || imgHeight != 0) { //значит значение установили
+            if (imgWidth > maxWidth || imgHeight > maxHeight) {
+                double multiplier = Math.max((double) imgWidth / (double) maxWidth, (double) imgHeight / (double) maxHeight);
+                newWidth = (int) (imgWidth / multiplier);
+                newHeight = (int) (imgHeight / multiplier);
+            }
         }
 
         // Теперь нам надо попросить картинку изменить свои размеры на новые.
